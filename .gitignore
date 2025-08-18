@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Outputs / logs
+data/outputs/
+runs/
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
