@@ -1,0 +1,3 @@
+epoch,class,box_loss,mAP50,mAP50-95
+1,placa de carro,,0.2936440459353183,
+1,placa de carro,,0.2979932212796183,

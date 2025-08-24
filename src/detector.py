@@ -1,8 +1,16 @@
+
+
+# Responsabilidade: Detectar placas de veículos em imagens usando o modelo YOLO.
+
+
+
 from ultralytics import YOLO
 from typing import List, Tuple
 import numpy as np
 
 class PlateDetector:
+    # PlateDetector: Classe que carrega o modelo YOLO e realiza a detecção de placas.
+
     def __init__(self, weights_path: str, device: str = "cpu", conf: float =
 0.25, iou: float = 0.45):
         self.model = YOLO(weights_path)

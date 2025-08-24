@@ -20,3 +20,8 @@ runs/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Ignorar datasets pesados
+data_placas/train/
+data_placas/valid/
+data_placas/test/

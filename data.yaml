@@ -1,0 +1,14 @@
+# Arquivo data.yaml para YOLOv8
+
+# Defina o caminho base para o dataset
+path: C:/Users/Elias/projeto-placaas/ALPR/data_placas
+
+# Caminhos relativos para as imagens de treino e validação
+train: train/images
+val: valid/images
+
+# Número de classes
+nc: 1
+
+# Nome da(s) classe(s)
+names: ['placa']
