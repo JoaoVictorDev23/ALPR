@@ -1,7 +1,7 @@
 # Arquivo data.yaml para YOLOv8
 
 # Caminho base para o dataset (relativo ao local do data.yaml)
-path: ./data_placas
+path: data_placas
 
 # Subpastas com imagens
 train: train/images

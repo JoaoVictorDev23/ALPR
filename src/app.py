@@ -24,20 +24,20 @@ def check_environment():
         print(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
 
     # Verifica se data.yaml existe
-    if os.path.exists("../data/data.yaml"):
+    if os.path.exists("data/data.yaml"):
         print("✓ data.yaml encontrado")
     else:
         print("✗ data.yaml não encontrado - Verifique o caminho")
 
     # Verifica se os dados de treinamento existem
-    if os.path.exists("data/train"):
-        train_images = [f for f in os.listdir('data/train/images') if f.endswith(('.jpg', '.png', '.jpeg'))]
+    if os.path.exists("data_placas/train"):
+        train_images = [f for f in os.listdir('data_placas/train') if f.endswith(('.jpg', '.png', '.jpeg'))]
         print(f"✓ {len(train_images)} imagens de treino encontradas")
     else:
         print("✗ Pasta data/train não encontrada")
 
     # Verifica se o modelo base existe
-    if os.path.exists("../yolov8n.pt"):
+    if os.path.exists("yolov8n.pt"):
         print("✓ yolov8n.pt encontrado")
     else:
         print("✗ yolov8n.pt não encontrado - Baixando automaticamente...")
@@ -49,7 +49,7 @@ def check_environment():
 
     print("===============================")
 
-def train_model(class_name, data_yaml="data/data.yaml", epochs=100, imgsz=640):
+def train_model(class_name, data_yaml = "data/data.yaml", epochs=100, imgsz=640):
     """
     Treina o modelo YOLOv8 para detecção de placas veiculares.
     Configurado para RTX 3060 12GB.
@@ -86,14 +86,14 @@ def train_model(class_name, data_yaml="data/data.yaml", epochs=100, imgsz=640):
     )
 
     # Salva o modelo treinado
-    os.makedirs("../models", exist_ok=True)
+    os.makedirs("models", exist_ok=True)
     model.save("models/placa_detection.pt")
 
     # Exporta para formato ONNX (opcional)
     model.export(format="onnx")
 
     # Salva métricas em CSV
-    os.makedirs("../data", exist_ok=True)
+    os.makedirs("data", exist_ok=True)
     metrics_df = pd.DataFrame(results.results_dict)
     metrics_df.to_csv("data/training_metrics.csv", index=False)
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     if resposta.lower() == 's':
         print("\nIniciando treinamento...")
         train_model(
-            class_name="placa de carro",
+            class_name="placa",
             data_yaml="data/data.yaml",
             epochs=100,
             imgsz=640
