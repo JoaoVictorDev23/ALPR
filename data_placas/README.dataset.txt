@@ -1,5 +1,5 @@
-# Placa de carro  > 2024-01-09 8:42pm
-https://universe.roboflow.com/trabalho-jnal6/placa-de-carro-oz0eg
+# placa > placa_final_320
+https://universe.roboflow.com/labsisco/placa-vuzyj
 
 Provided by a Roboflow user
 License: CC BY 4.0

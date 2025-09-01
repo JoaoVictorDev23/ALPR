@@ -1,8 +1,8 @@
 
-Placa de carro  - v3 2024-01-09 8:42pm
+placa - v5 placa_final_320
 ==============================
 
-This dataset was exported via roboflow.com on April 3, 2024 at 4:49 PM GMT
+This dataset was exported via roboflow.com on January 10, 2025 at 12:20 PM GMT
 
 Roboflow is an end-to-end computer vision platform that helps you
 * collaborate with your team on computer vision projects
@@ -17,12 +17,12 @@ visit https://github.com/roboflow/notebooks
 
 To find over 100k other datasets and pre-trained models, visit https://universe.roboflow.com
 
-The dataset includes 663 images.
-Cars-license-plate are annotated in YOLOv8 format.
+The dataset includes 4880 images.
+Placa-FlWS are annotated in YOLOv8 format.
 
 The following pre-processing was applied to each image:
 * Auto-orientation of pixel data (with EXIF-orientation stripping)
-* Resize to 640x640 (Stretch)
+* Resize to 320x320 (Stretch)
 
 No image augmentation techniques were applied.
 

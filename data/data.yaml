@@ -1,0 +1,15 @@
+# Arquivo data.yaml para YOLOv8
+
+# Caminho base para o dataset (relativo ao local do data.yaml)
+path: ./data_placas
+
+# Subpastas com imagens
+train: train/images
+val: valid/images
+test: test/images
+
+# Número de classes
+nc: 1
+
+# Nome da(s) classe(s)
+names: ['placa']
