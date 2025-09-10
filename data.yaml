@@ -1,7 +1,8 @@
 # Arquivo data.yaml para YOLOv8
 
 # Defina o caminho base para o dataset
-path: C:/Users/Elias/projeto-placaas/ALPR/data_placas
+# path: C:/Users/Elias/projeto-placaas/ALPR/data_placas
+path: C:/Users/Elias/Downloads/placa.v5-placa_final_320.yolov8
 
 # Caminhos relativos para as imagens de treino e validação
 train: train/images

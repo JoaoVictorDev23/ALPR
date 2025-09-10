@@ -2,11 +2,12 @@
 Treinamento de modelo YOLO para Reconhecimento de Placas Veiculares
 Autor: Elias Teófilo
 Descrição: Este script implementa o treinamento de um modelo YOLOv8 
-para detecção de placas veiculares, conforme fundamentação teórica do TCC:
-- Uso de Redes Neurais Convolucionais (CNNs)
-- Detecção em tempo real (YOLO)
-- Pré-processamento de imagens (PDI)
-- Extração de métricas para avaliação (box_loss, mAP, precisão, recall, FPS)
+para detecção de placas veiculares, conforme fundamentação teórica do TCC.
+
+VERSÃO OTIMIZADA PARA HARDWARE LIMITADO:
+- Modelo base alterado para yolov8n.pt para treinamento rápido e eficiente.
+- Parâmetros de treino ajustados para priorizar velocidade e evitar erros de memória.
+- Adicionado Early Stopping para evitar overfitting e otimizar o tempo de treino.
 """
 
 import argparse
@@ -31,6 +32,10 @@ def preprocess_image(image_path, save_path=None):
     - Operações morfológicas (Dilatação + Erosão)
     """
     img = cv2.imread(image_path)
+    if img is None:
+        print(f"Erro: Não foi possível carregar a imagem em {image_path}")
+        return None
+    
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5,5), 0)
     equalized = cv2.equalizeHist(blur)
@@ -40,69 +45,74 @@ def preprocess_image(image_path, save_path=None):
     kernel = np.ones((3,3), np.uint8)
     morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
+    # YOLO espera 3 canais, então convertemos a imagem P&B de volta para o formato BGR
+    processed_bgr = cv2.cvtColor(morph, cv2.COLOR_GRAY2BGR)
+
     if save_path:
-        cv2.imwrite(save_path, morph)
-    return morph
+        cv2.imwrite(save_path, processed_bgr)
+    return processed_bgr
 
 # ==========================
 # Treinamento do Modelo YOLO
 # ==========================
-def train_model(class_name, data_yaml="data.yaml", epochs=100, imgsz=320):
+def train_model(class_name, data_yaml="data.yaml"):
     """
     Treina o modelo YOLOv8 para detecção de placas veiculares.
     Salva métricas em CSV e gera gráficos.
     """
 
-    # Conforme discutido no TCC, utilizamos YOLO para detecção em tempo real
-    model = YOLO("yolov8n.pt")
+    # --- PARÂMETROS OTIMIZADOS PARA VELOCIDADE E HARDWARE ---
+    MODEL_VARIANT = 'yolov8n.pt'  # <-- ALTERADO: Modelo nano para treinamento rápido.
+    IMG_SIZE = 320                # <-- ALTERADO: Tamanho de imagem reduzido para treinar mais rápido.
+    MAX_EPOCHS = 100              # Mantido em 100 para ter um número razoável de épocas.
+    PATIENCE = 10                 # <-- ALTERADO: Early Stopping mais agressivo para treino rápido.
+    BATCH_SIZE = 8                # <-- ALTERADO: Batch size fixo para ser seguro na 1050 2GB.
+    OPTIMIZER = 'AdamW'           # Mantido, é uma boa escolha.
+    PROJECT_NAME = 'runs/placas_otimizado_rapido' # Novo nome para o diretório de resultados.
 
-    # Treinamento
-    results = model.train(data=data_yaml, epochs=epochs, imgsz=imgsz)
+    model = YOLO(MODEL_VARIANT)
 
-    # Extração de métricas
-    metrics_list = []
-    for epoch in range(epochs):
-        metrics = {
-            "epoch": epoch + 1,
-            "class": class_name,
-            "box_loss": results.box.loss[epoch] if hasattr(results.box, "loss") and len(results.box.loss) > epoch else None,
-            "mAP50": results.box.map50 if hasattr(results.box, "map50") else None,
-            "mAP50-95": results.box.map50_95[epoch] if hasattr(results.box, "map50_95") and len(results.box.map50_95) > epoch else None,
-            "precision": results.box.p[0] if hasattr(results.box, "p") else None,
-            "recall": results.box.r[0] if hasattr(results.box, "r") else None,
-            "fps": results.speed["inference"] if hasattr(results, "speed") else None,
-        }
-        metrics_list.append(metrics)
+    print(f"Iniciando treinamento com o modelo {MODEL_VARIANT}...")
 
-    # Converte para DataFrame
-    metrics_df = pd.DataFrame(metrics_list)
+    # Treinamento com parâmetros avançados
+    results = model.train(
+        data=data_yaml,
+        epochs=MAX_EPOCHS,
+        patience=PATIENCE,
+        batch=BATCH_SIZE,
+        imgsz=IMG_SIZE,
+        optimizer=OPTIMIZER,
+        project=PROJECT_NAME,
+        name=f'{class_name.replace(" ", "_")}_treino',
 
-    # Salva em CSV (acrescentando se já existir)
-    csv_path = "C:\\Users\\Elias\\projeto-placaas\\ALPR\\data_placasmetrics.csv"
-    if os.path.exists(csv_path):
-        existing_df = pd.read_csv(csv_path)
-        metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+        # --- Parâmetros de Data Augmentation ---
+        # Mantidos, pois ajudam na generalização sem um alto custo de processamento.
+        hsv_h=0.015,
+        hsv_s=0.7,
+        hsv_v=0.4,
+        degrees=10.0,
+        translate=0.1,
+        scale=0.5,
+        shear=2.0,
+        perspective=0.0,
+        flipud=0.0,
+        fliplr=0.5,
+        mosaic=0.5,           # <-- ALTERADO: Mosaic para 0.5. Pode ser mais lento com hardware limitado.
+        mixup=0.0             # <-- ALTERADO: Desabilitado para um treino mais rápido.
+    )
+    
+    # Extrai o DataFrame de métricas diretamente dos resultados
+    metrics_df = results.csv_to_df()
+
+    # Salva em CSV no diretório da execução
+    save_dir = results.save_dir
+    csv_path = os.path.join(save_dir, "metricas_finais.csv")
     metrics_df.to_csv(csv_path, index=False)
+    print(f"Métricas salvas em: {csv_path}")
 
-    # Gráficos
-    plt.figure(figsize=(12, 6))
-    plt.plot(metrics_df["epoch"], metrics_df["box_loss"], marker="o", label="Box Loss")
-    plt.title("Perda da Caixa Delimitadora por Época - Detecção de Placas")
-    plt.xlabel("Época"); plt.ylabel("Box Loss")
-    plt.xticks(metrics_df["epoch"]); plt.grid(); plt.legend(); plt.show()
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(metrics_df["epoch"], metrics_df["mAP50"], marker="o", label="mAP50", color="orange")
-    plt.title("mAP50 por Época - Detecção de Placas")
-    plt.xlabel("Época"); plt.ylabel("mAP50")
-    plt.xticks(metrics_df["epoch"]); plt.grid(); plt.legend(); plt.show()
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(metrics_df["epoch"], metrics_df["mAP50-95"], marker="o", label="mAP50-95", color="green")
-    plt.title("mAP50-95 por Época - Detecção de Placas")
-    plt.xlabel("Época"); plt.ylabel("mAP50-95")
-    plt.xticks(metrics_df["epoch"]); plt.grid(); plt.legend(); plt.show()
+    print(f"Gráficos de treinamento e resultados salvos em: {save_dir}")
 
 if __name__ == "__main__":
     # Exemplo de uso para o projeto de placas de carro
-    train_model("placa de carro", data_yaml="data.yaml", epochs=100, imgsz=320)
+    # Certifique-se de que o 'data.yaml' aponta para seu dataset
+    train_model("placa de carro", data_yaml="data.yaml")

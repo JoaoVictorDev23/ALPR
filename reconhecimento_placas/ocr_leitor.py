@@ -15,24 +15,17 @@ class LeitorOCR:
         if tesseract_path:
             pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
+    # ocr_leitor.py
+# ...
+class LeitorOCR:
+    # ...
     def ler_placa(self, imagem_processada):
-        """
-        Extrai o texto alfanumérico da imagem da placa.
-
-        Args:
-            imagem_processada: A imagem da placa após o pré-processamento.
-
-        Returns:
-            O texto da placa reconhecido.
-        """
-        # Configurações do Tesseract para otimizar a leitura de placas
-        # --psm 7: Trata a imagem como uma única linha de texto.
-        # -c tessedit_char_whitelist: Filtra para caracteres esperados em placas.
+        # Aumentamos o filtro de caracteres para incluir 'o' e 'O'
+        # Isso ajuda o Tesseract a tentar reconhecer letras em posições de números
         config = '--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         
         try:
             texto = pytesseract.image_to_string(imagem_processada, config=config)
-            # Remove espaços em branco e caracteres de nova linha
             return "".join(texto.split()).upper()
         except Exception as e:
             print(f"[ERRO OCR] Falha ao ler a imagem: {e}")

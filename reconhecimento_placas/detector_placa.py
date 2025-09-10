@@ -4,67 +4,70 @@ from ultralytics import YOLO
 
 class DetectorPlacaYOLO:
     """
-    Classe responsável pela detecção de placas veiculares utilizando o modelo YOLO.
-    Corresponde à etapa de "Detecção de Objetos com YOLO" (Seção 2.4 do TCC).
-    O YOLO utiliza Redes Neurais Convolucionais (CNNs) para realizar a detecção
-    de forma rápida e precisa, ideal para aplicações em tempo real[cite: 167, 169].
+    Classe responsável pela detecção de placas veiculares utilizando o modelo YOLO
+    treinado especificamente para essa tarefa.
+    
+    A detecção é direta e precisa, eliminando a necessidade de heurísticas
+    para encontrar a placa dentro da Região de Interesse (ROI) do carro.
     """
-    def __init__(self, model_path='yolov8n.pt'):
+    
+    def __init__(self, model_path='C:/Users/Elias/projeto-placaas/ALPR/runs/placas_otimizado/placa_de_carro_treino3/weights/best.pt'):
         """
-        Inicializa o detector com um modelo YOLO pré-treinado.
-        Embora 'yolov8n.pt' seja um modelo geral, ele é eficaz para encontrar
-        veículos, e um modelo treinado especificamente para placas (custom model)
-        seria ainda mais preciso. Para este exemplo, usaremos um modelo que detecta carros
-        e, em seguida, buscaremos a placa na ROI do carro. Uma abordagem mais direta
-        seria usar um modelo já treinado para 'license_plate'.
+        Inicializa o detector com o modelo YOLO customizado para placas.
         """
+        # Carrega o modelo que foi treinado por você
         self.model = YOLO(model_path)
-
+        # O modelo treinado possui uma única classe: 'license_plate', com ID 0.
+        
     def detectar(self, frame):
         """
-        Detecta placas no frame fornecido.
+        Detecta placas veiculares no frame fornecido.
 
         Args:
             frame: O frame do vídeo a ser processado.
 
         Returns:
             Uma lista de tuplas, onde cada tupla contém as coordenadas (x1, y1, x2, y2)
-            da Região de Interesse (ROI) onde uma placa foi detectada.
+            das placas detectadas.
         """
-        # A detecção é tratada como um problema de regressão unificada,
-        # o que torna o YOLO extremamente rápido[cite: 174].
+        # Executa a detecção no frame. O modelo já foi treinado para encontrar placas.
+        # Não precisamos mais buscar a classe 'car'.
         results = self.model(frame)
         rois = []
 
-        # Para cada objeto detectado no frame
+        # Para cada objeto detectado no frame, ele já será uma placa
         for result in results:
             boxes = result.boxes
-            for box in boxes:
-                # Obtenha as coordenadas do bounding box
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                
-                # Para um modelo genérico, filtramos por classe (ex: 'car').
-                # Se tivéssemos um modelo treinado para 'license_plate',
-                # usaríamos o ID dessa classe.
-                class_id = int(box.cls[0])
-                class_name = self.model.names[class_id]
-
-                # Simulação: assumindo que a placa está na parte inferior central do carro.
-                # A abordagem ideal é usar um detector de placas treinado.
-                if class_name == 'car':
-                    # Heurística para encontrar a placa dentro da ROI do carro
-                    car_h = y2 - y1
-                    car_w = x2 - x1
-                    # Estimativa da ROI da placa
-                    plate_y1 = y1 + int(car_h * 0.7)
-                    plate_y2 = y2 - int(car_h * 0.1)
-                    plate_x1 = x1 + int(car_w * 0.3)
-                    plate_x2 = x2 - int(car_w * 0.3)
-                    
-                    rois.append((plate_x1, plate_y1, plate_x2, plate_y2))
+            # A classe ID para o seu modelo treinado (com uma classe) será sempre 0
+            if len(boxes) > 0:
+                for box in boxes:
+                    # Apenas pegamos as coordenadas da caixa delimitadora
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    # Adiciona as coordenadas da placa à lista de ROIs
+                    rois.append((x1, y1, x2, y2))
         
-        # Em um cenário real com um modelo treinado para placas:
-        # if class_name == 'license_plate':
-        #     rois.append((x1, y1, x2, y2))
-
         return rois
+
+# --- Exemplo de uso da classe ---
+if __name__ == "__main__":
+    # Substitua este caminho pelo caminho real do seu modelo treinado
+    detector = DetectorPlacaYOLO()
+
+    # Exemplo com uma imagem estática para demonstração
+    # Certifique-se de ter uma imagem de teste
+    image_path = "caminho/para/sua/imagem_teste.jpg" 
+    frame = cv2.imread(image_path)
+    
+    if frame is not None:
+        rois_detectadas = detector.detectar(frame)
+        
+        # Desenha os retângulos nas ROIs detectadas
+        for x1, y1, x2, y2 in rois_detectadas:
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            
+        # Mostra a imagem resultante
+        cv2.imshow('Detecao de Placas', frame)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    else:
+        print("Erro: Não foi possível carregar a imagem. Verifique o caminho.")
