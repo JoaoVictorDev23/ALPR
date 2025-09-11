@@ -75,8 +75,8 @@ class PipelineReconhecimento:
         # Componentes do pipeline
         self.detector = DetectorPlacaYOLO()
         self.preprocessador = PreProcessadorROI()
-        self.leitor_ocr = LeitorOCR()  # EasyOCR será inicializado aqui
-        self.validador = ValidadorPlaca()
+        self.leitor_ocr = LeitorOCR()
+        self.validador = ValidadorPlaca()  # Já tem consolidação interna
         
         # Fonte de vídeo
         self.cap = cv2.VideoCapture(video_path)
@@ -143,7 +143,23 @@ class PipelineReconhecimento:
                     texto_bruto = self.leitor_ocr.ler_placa(placa_processada)
                     print(f"Texto bruto do OCR: '{texto_bruto}'")
 
+                    # No loop de detecção, adicione:
                     placa_validada = self.validador.corrigir_e_validar(texto_bruto)
+
+                    # Filtro temporal: só aceita se for consistentemente detectada
+                    if placa_validada and placa_validada not in self.placas_ja_capturadas:
+                        # Verifica se a placa foi detectada múltiplas vezes
+                        contagem = self.validador.contador_confianca.get(placa_validada, 0)
+                        if contagem >= 2:  # Requer pelo menos 2 detecções
+                            nova_captura = {
+                                "texto": placa_validada,
+                                "thumbnail": self.last_frame[y1:y2, x1:x2].copy()
+                            }
+                            self.capturas_recentes.append(nova_captura)
+                            self.placas_ja_capturadas.add(placa_validada)
+                            print(f"✅ Nova placa capturada: {placa_validada} (confiança: {contagem})")
+                        else:
+                            print(f"⏳ Placa detectada mas aguardando confirmação: {placa_validada}")
                     print(f"Texto validado: '{placa_validada}'")
 
                     self.last_results.append((roi_coords, placa_validada))

@@ -11,7 +11,7 @@ class DetectorPlacaYOLO:
     para encontrar a placa dentro da Região de Interesse (ROI) do carro.
     """
 
-    def __init__(self, model_path='C:/Users/jvtor/OneDrive/Área de Trabalho/Desktop/TCC/ALPR/runs/detect/train3/weights/best.pt'):
+    def __init__(self, model_path='C:/Users/jvtor/Documents/ALPR/runs/detect/train3/weights/best.pt'):
         """
         Inicializa o detector com o modelo YOLO customizado para placas.
         """
