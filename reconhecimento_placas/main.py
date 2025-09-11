@@ -8,7 +8,22 @@ from pre_processador import PreProcessadorROI
 from ocr_leitor import LeitorOCR
 from validador_placa import ValidadorPlaca
 from utils import desenhar_resultados, desenhar_barra_capturas
+# Adicione no início do main.py
+import os
 
+
+def salvar_debug(placa_recortada, placa_processada, texto_bruto, texto_validado, frame_count):
+    """Salva imagens para debug"""
+    debug_dir = "debug"
+    if not os.path.exists(debug_dir):
+        os.makedirs(debug_dir)
+
+    cv2.imwrite(f"{debug_dir}/frame_{frame_count}_original.jpg", placa_recortada)
+    cv2.imwrite(f"{debug_dir}/frame_{frame_count}_processada.jpg", placa_processada)
+
+    with open(f"{debug_dir}/frame_{frame_count}_texto.txt", "w") as f:
+        f.write(f"Bruto: {texto_bruto}\n")
+        f.write(f"Validado: {texto_validado}\n")
 # ... (a função selecionar_fonte_video e redimensionar_frame continuam as mesmas) ...
 def selecionar_fonte_video():
     root = tk.Tk()
@@ -60,7 +75,7 @@ class PipelineReconhecimento:
         # Componentes do pipeline
         self.detector = DetectorPlacaYOLO()
         self.preprocessador = PreProcessadorROI()
-        self.leitor_ocr = LeitorOCR()
+        self.leitor_ocr = LeitorOCR()  # EasyOCR será inicializado aqui
         self.validador = ValidadorPlaca()
         
         # Fonte de vídeo
@@ -98,24 +113,40 @@ class PipelineReconhecimento:
 
             # --- LÓGICA DE OTIMIZAÇÃO DE FPS ---
             # Roda a detecção completa apenas em intervalos
-            if self.frame_count % self.detection_interval == 0 and not self.is_paused:
+            if not self.is_paused:  # Detecta em TODOS os frames para testar
                 self.last_results = [] # Limpa resultados antigos antes de uma nova detecção
                 rois_detectadas = self.detector.detectar(self.last_frame)
 
+                # No loop principal do main.py, adicione prints de debug:
                 for roi_coords in rois_detectadas:
                     x1, y1, x2, y2 = roi_coords
-                    if x1 >= x2 or y1 >= y2: continue
-                    
+                    print(f"ROI detectada: {x1},{y1} - {x2},{y2}")
+
+                    if x1 >= x2 or y1 >= y2:
+                        print("ROI inválida - pulando")
+                        continue
+
                     placa_recortada = self.last_frame[y1:y2, x1:x2]
-                    if placa_recortada.size == 0: continue
+
+                    if placa_recortada.size == 0:
+                        print("ROI vazia - pulando")
+                        continue
+
+                    # DEBUG: Salva a ROI original
+                    cv2.imwrite(f"debug_roi_{self.frame_count}.jpg", placa_recortada)
 
                     placa_processada = self.preprocessador.processar(placa_recortada)
-                    texto_bruto = self.leitor_ocr.ler_placa(placa_processada)
-                    placa_validada = self.validador.corrigir_e_validar(texto_bruto)
-                    
-                    # Armazena o resultado (válido ou não) para redesenhar nos frames seguintes
-                    self.last_results.append((roi_coords, placa_validada))
 
+                    # DEBUG: Salva a ROI processada
+                    cv2.imwrite(f"debug_processed_{self.frame_count}.jpg", placa_processada)
+
+                    texto_bruto = self.leitor_ocr.ler_placa(placa_processada)
+                    print(f"Texto bruto do OCR: '{texto_bruto}'")
+
+                    placa_validada = self.validador.corrigir_e_validar(texto_bruto)
+                    print(f"Texto validado: '{placa_validada}'")
+
+                    self.last_results.append((roi_coords, placa_validada))
                     # --- LÓGICA DE CAPTURA DE PLACA ---
                     if placa_validada and placa_validada not in self.placas_ja_capturadas:
                         nova_captura = {

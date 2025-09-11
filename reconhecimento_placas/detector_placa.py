@@ -6,19 +6,19 @@ class DetectorPlacaYOLO:
     """
     Classe responsável pela detecção de placas veiculares utilizando o modelo YOLO
     treinado especificamente para essa tarefa.
-    
+
     A detecção é direta e precisa, eliminando a necessidade de heurísticas
     para encontrar a placa dentro da Região de Interesse (ROI) do carro.
     """
-    
-    def __init__(self, model_path='C:/Users/Elias/projeto-placaas/ALPR/runs/placas_otimizado/placa_de_carro_treino3/weights/best.pt'):
+
+    def __init__(self, model_path='C:/Users/jvtor/OneDrive/Área de Trabalho/Desktop/TCC/ALPR/runs/detect/train3/weights/best.pt'):
         """
         Inicializa o detector com o modelo YOLO customizado para placas.
         """
         # Carrega o modelo que foi treinado por você
         self.model = YOLO(model_path)
         # O modelo treinado possui uma única classe: 'license_plate', com ID 0.
-        
+
     def detectar(self, frame):
         """
         Detecta placas veiculares no frame fornecido.
@@ -45,7 +45,7 @@ class DetectorPlacaYOLO:
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     # Adiciona as coordenadas da placa à lista de ROIs
                     rois.append((x1, y1, x2, y2))
-        
+
         return rois
 
 # --- Exemplo de uso da classe ---
@@ -55,16 +55,16 @@ if __name__ == "__main__":
 
     # Exemplo com uma imagem estática para demonstração
     # Certifique-se de ter uma imagem de teste
-    image_path = "caminho/para/sua/imagem_teste.jpg" 
+    image_path = "caminho/para/sua/imagem_teste.jpg"
     frame = cv2.imread(image_path)
-    
+
     if frame is not None:
         rois_detectadas = detector.detectar(frame)
-        
+
         # Desenha os retângulos nas ROIs detectadas
         for x1, y1, x2, y2 in rois_detectadas:
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            
+
         # Mostra a imagem resultante
         cv2.imshow('Detecao de Placas', frame)
         cv2.waitKey(0)
