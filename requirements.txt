@@ -2,7 +2,6 @@ ultralytics==8.2.0
 opencv-python==4.6.0.66
 pillow==10.2.0
 numpy==1.26.0
-paddleocr==2.7.3
 pyyaml==6.0.1
 tqdm==4.66.2
 rich==13.7.1
@@ -11,5 +10,6 @@ matplotlib==3.7.1
 torch==2.2.0+cu121
 torchvision==0.17.0+cu121
 torchaudio==2.2.0+cu121
-easyocr==1.7.1
+pytesseract==0.3.10
+python-Levenshtein==0.23.0  # opcional, acelera o validador
 --extra-index-url https://download.pytorch.org/whl/cu121

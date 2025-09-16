@@ -17,6 +17,8 @@ class DetectorPlacaYOLO:
         """
         # Carrega o modelo que foi treinado por você
         self.model = YOLO(model_path)
+        self.model.to("cuda")  # força GPU
+
         # O modelo treinado possui uma única classe: 'license_plate', com ID 0.
 
     def detectar(self, frame):
