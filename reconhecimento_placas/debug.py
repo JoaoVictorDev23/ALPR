@@ -6,7 +6,7 @@ from ocr_leitor import LeitorOCR
 from validador_placa import ValidadorPlaca
 
 # Teste com um frame específico
-cap = cv2.VideoCapture("C:/Users/jvtor/Downloads/SUPERCARS IN SÃO PAULO! - 812, Turbo S, GT3 RS..mp4")
+cap = cv2.VideoCapture("C:/Users/João Victor/Downloads/SUPERCARS IN SÃO PAULO! - 812, Turbo S, GT3 RS..mp4")
 ret, frame = cap.read()
 
 if ret:

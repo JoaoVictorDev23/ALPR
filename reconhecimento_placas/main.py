@@ -372,7 +372,67 @@ class AppReconhecimento:
                 self.pipeline.release()
         except Exception:
             pass
+
+        # Popup perguntando se deseja salvar
+        if self.pipeline and self.pipeline.capturas_recentes:
+            resposta = messagebox.askyesno(
+                "Salvar placas",
+                "Deseja salvar as placas reconhecidas?"
+            )
+            if resposta:
+                self._mostrar_opcoes_salvamento()
+
         self.master.destroy()
+
+    def _mostrar_opcoes_salvamento(self):
+        """Cria popup com botões de escolha do método de salvamento"""
+        win = tk.Toplevel(self.master)
+        win.title("Escolha o método de salvamento")
+        win.geometry("300x120")
+        win.resizable(False, False)
+
+        ttk.Label(win, text="Selecione o método:", font=("Segoe UI", 10, "bold")).pack(pady=10)
+
+        btn_frame = ttk.Frame(win)
+        btn_frame.pack(pady=5)
+
+        ttk.Button(
+            btn_frame,
+            text="Salvar TXT",
+            command=lambda: [self._salvar_txt(), win.destroy()]
+        ).pack(side="left", padx=15)
+
+        ttk.Button(
+            btn_frame,
+            text="Enviar Endpoint",
+            command=lambda: [self._enviar_endpoint(), win.destroy()]
+        ).pack(side="right", padx=15)
+
+    def _salvar_txt(self):
+        """Salva todas as placas detectadas em um arquivo .txt"""
+        import os
+        pasta = "placas_salvas"
+        os.makedirs(pasta, exist_ok=True)
+        caminho = os.path.join(pasta, "placas_detectadas.txt")
+
+        with open(caminho, "w", encoding="utf-8") as f:
+            for captura in self.pipeline.capturas_recentes:
+                f.write(captura["texto"] + "\n")
+
+        messagebox.showinfo("Sucesso", f"Placas salvas em {caminho}")
+
+    def _enviar_endpoint(self):
+        """Envia imagens das placas para o endpoint configurado"""
+        import requests, cv2
+        url = "http://localhost:8000/salvar_placa/"
+        for captura in self.pipeline.capturas_recentes:
+            _, buffer = cv2.imencode(".jpg", captura["thumbnail"])
+            requests.post(
+                url,
+                data={"placa": captura["texto"]},
+                files={"file": (f"{captura['texto']}.jpg", buffer.tobytes(), "image/jpeg")}
+            )
+        messagebox.showinfo("Sucesso", "Placas enviadas para o endpoint.")
 
     def _limpar_lista(self):
         for item in self.tree.get_children():

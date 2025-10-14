@@ -7,9 +7,9 @@ tqdm==4.66.2
 rich==13.7.1
 pandas==2.2.1
 matplotlib==3.7.1
-torch==2.2.0+cu121
-torchvision==0.17.0+cu121
-torchaudio==2.2.0+cu121
+torch==2.2.0
+torchvision==0.17.0
+torchaudio==2.2.0
 pytesseract==0.3.10
 python-Levenshtein==0.23.0  # opcional, acelera o validador
 --extra-index-url https://download.pytorch.org/whl/cu121
