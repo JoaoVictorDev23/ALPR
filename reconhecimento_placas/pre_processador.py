@@ -8,9 +8,6 @@ class PreProcessadorROI:
         metodo:
           - "robusto" (default): normaliza contraste, reduz ruído, binariza e faz morfologia,
                                  adiciona borda e redimensiona para altura ~110 px
-          - "clahe_otsu": compatível com versão anterior
-          - "adaptive": compatível com versão anterior
-          - "sharpen_otsu": compatível com versão anterior
         """
         self.metodo = metodo
 
