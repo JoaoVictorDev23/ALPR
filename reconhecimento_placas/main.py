@@ -13,12 +13,16 @@ import uuid
 # Módulos do projeto (componentes da pipeline):
 # - DetectorPlacaYOLO: detecta placas no frame (retorna caixas/ROIs).
 # - PreProcessadorROI: melhora a ROI para o OCR (ex.: equalização, binarização).
-# - LeitorOCR: extrai texto da ROI (OCR).
+# - OCRCompilador: reconhecimento de caracteres estruturado como compilador.
 # - ValidadorPlaca: corrige e valida o texto reconhecido (regex/heurísticas).
+#
+# NOTA ACADÊMICA: O módulo OCRCompilador implementa o reconhecimento óptico
+# de caracteres utilizando arquitetura inspirada em compiladores, permitindo
+# explicação teórica das fases de Análise Léxica, Sintática e Semântica.
 # =============================
 from detector_placa import DetectorPlacaYOLO
 from pre_processador import PreProcessadorROI
-from ocr_leitor import LeitorOCR
+from ocr_compilador import OCRCompilador  # Substituição: LeitorOCR -> OCRCompilador
 from validador_placa import ValidadorPlaca
 
 # Extensões de vídeo válidas para seleção via diálogo
@@ -87,10 +91,10 @@ class PipelineReconhecimento:
         ocr_attempt_delay=0.8,       # intervalo entre tentativas de OCR (segundos)
         max_ocr_threads=3            # número máximo de threads de OCR simultâneas
     ):
-        # Componentes principais da pipeline (detector, pré-processador, OCR, validador)
+        # Componentes principais da pipeline (detector, pré-processador, OCR-Compilador, validador)
         self.detector = DetectorPlacaYOLO()
         self.preprocessador = PreProcessadorROI()
-        self.leitor_ocr = LeitorOCR()
+        self.leitor_ocr = OCRCompilador()  # OCRCompilador substitui LeitorOCR
         self.validador = ValidadorPlaca()
 
         # Fonte de vídeo
